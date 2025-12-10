@@ -1,0 +1,37 @@
+# Compiled class files
+*.class
+target/
+
+# Log files
+*.log
+
+# Maven
+.mvn/
+mvnw
+mvnw.cmd
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# VS Code
+.vscode/
+
+# Mac OS
+.DS_Store
+
+# Application properties con datos sensibles (comentar si quieres subir el tuyo)
+# src/main/resources/application.properties
+
+# Bases de datos locales
+*.db
+*.sqlite
+
+# Archivos temporales
+*.tmp
+*.bak
+*.swp
+*~
