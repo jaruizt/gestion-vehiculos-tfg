@@ -1,6 +1,7 @@
 package com.uoc.tfg.gestionvehiculos.entities;
 
 import com.uoc.tfg.gestionvehiculos.entities.base.AuditableEntity;
+import com.uoc.tfg.gestionvehiculos.enums.EstadoContrato;
 import com.uoc.tfg.gestionvehiculos.enums.TipoCombustible;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -8,6 +9,15 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * @author José Antonio Ruiz Traid
+ * @date 11/2025
+ * @version 1.0
+ * @since 1.0
+ */
 @Entity
 @Table(name = "vehiculos", indexes = {
         @Index(name = "idx_matricula", columnList = "matricula"),
@@ -52,5 +62,33 @@ public class Vehiculo extends AuditableEntity {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "situacion_id", nullable = false)
     private SituacionVehiculo situacion;
+
+    @OneToOne(mappedBy = "vehiculo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private FacturaCompra facturaCompra;
+
+    @OneToMany(mappedBy = "vehiculo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ContratoRenting> contratos = new ArrayList<>();
+
+    @OneToMany(mappedBy = "vehiculo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ReservaVenta> reservas = new ArrayList<>();
+
+    @OneToOne(mappedBy = "vehiculo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private FacturaVenta facturaVenta;
+
+    public boolean estaDisponibleParaRenting() {
+        return situacion != null &&
+                "DISPONIBLE".equals(situacion.getNombre()) &&
+                facturaCompra != null &&
+                facturaVenta == null;
+    }
+
+    public boolean estaEnRenting() {
+        return contratos.stream()
+                .anyMatch(c -> c.getEstado() == EstadoContrato.ACTIVO);
+    }
+
+    public boolean estaVendido() {
+        return facturaVenta != null;
+    }
 
 }
