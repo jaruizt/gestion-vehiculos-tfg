@@ -2,6 +2,9 @@ package com.uoc.tfg.gestionvehiculos.services;
 
 import com.uoc.tfg.gestionvehiculos.entities.Usuario;
 import com.uoc.tfg.gestionvehiculos.enums.Rol;
+import com.uoc.tfg.gestionvehiculos.exceptions.BusinessRuleException;
+import com.uoc.tfg.gestionvehiculos.exceptions.DuplicateResourceException;
+import com.uoc.tfg.gestionvehiculos.exceptions.ResourceNotFoundException;
 import com.uoc.tfg.gestionvehiculos.repositories.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +43,7 @@ public class UsuarioService {
     public Usuario obtenerPorId(Long id) {
         log.debug("Buscando usuario con id: {}", id);
         return usuarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", id));
     }
 
     /**
@@ -49,7 +52,7 @@ public class UsuarioService {
     public Usuario obtenerPorUsername(String username) {
         log.debug("Buscando usuario con username: {}", username);
         return usuarioRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "username", username));
     }
 
     /**
@@ -59,17 +62,14 @@ public class UsuarioService {
     public Usuario crear(Usuario usuario) {
         log.info("Creando nuevo usuario: {}", usuario.getUsername());
 
-        // Validar que el username no exista
         if (usuarioRepository.existsByUsername(usuario.getUsername())) {
-            throw new RuntimeException("El username ya existe: " + usuario.getUsername());
+            throw new DuplicateResourceException("Usuario", "username", usuario.getUsername());
         }
 
-        // Validar que el email no exista
         if (usuarioRepository.existsByEmail(usuario.getEmail())) {
-            throw new RuntimeException("El email ya está en uso: " + usuario.getEmail());
+            throw new DuplicateResourceException("Usuario", "email", usuario.getEmail());
         }
 
-        // Hashear password
         usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
         usuario.setFechaCambioPassword(LocalDateTime.now());
 
@@ -88,21 +88,18 @@ public class UsuarioService {
 
         Usuario usuarioExistente = obtenerPorId(id);
 
-        // Validar cambio de username
         if (!usuarioExistente.getUsername().equals(usuarioActualizado.getUsername())) {
             if (usuarioRepository.existsByUsername(usuarioActualizado.getUsername())) {
-                throw new RuntimeException("El username ya existe: " + usuarioActualizado.getUsername());
+                throw new DuplicateResourceException("Usuario", "username", usuarioActualizado.getUsername());
             }
         }
 
-        // Validar cambio de email
         if (!usuarioExistente.getEmail().equals(usuarioActualizado.getEmail())) {
             if (usuarioRepository.existsByEmail(usuarioActualizado.getEmail())) {
-                throw new RuntimeException("El email ya está en uso: " + usuarioActualizado.getEmail());
+                throw new DuplicateResourceException("Usuario", "email", usuarioActualizado.getEmail());
             }
         }
 
-        // Actualizar campos
         usuarioExistente.setUsername(usuarioActualizado.getUsername());
         usuarioExistente.setEmail(usuarioActualizado.getEmail());
         usuarioExistente.setNombre(usuarioActualizado.getNombre());
@@ -125,9 +122,8 @@ public class UsuarioService {
 
         Usuario usuario = obtenerPorId(id);
 
-        // Verificar contraseña actual
         if (!passwordEncoder.matches(passwordActual, usuario.getPassword())) {
-            throw new RuntimeException("La contraseña actual es incorrecta");
+            throw new BusinessRuleException("La contraseña actual es incorrecta");
         }
 
         // Actualizar contraseña

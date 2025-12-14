@@ -51,7 +51,7 @@ public class SituacionVehiculoService {
         log.info("Creando situación: {}", situacion.getNombre());
 
         if (situacionRepository.findByNombre(situacion.getNombre()).isPresent()) {
-            throw new RuntimeException("Ya existe una situación con el nombre: " + situacion.getNombre());
+            throw new DuplicateResourceException("situación", "nombre", situacion.getNombre());
         }
 
         SituacionVehiculo guardada = situacionRepository.save(situacion);

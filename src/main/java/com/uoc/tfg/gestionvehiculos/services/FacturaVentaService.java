@@ -5,6 +5,8 @@ import com.uoc.tfg.gestionvehiculos.entities.FacturaVenta;
 import com.uoc.tfg.gestionvehiculos.entities.ReservaVenta;
 import com.uoc.tfg.gestionvehiculos.entities.Vehiculo;
 import com.uoc.tfg.gestionvehiculos.enums.EstadoReserva;
+import com.uoc.tfg.gestionvehiculos.exceptions.BusinessRuleException;
+import com.uoc.tfg.gestionvehiculos.exceptions.DuplicateResourceException;
 import com.uoc.tfg.gestionvehiculos.repositories.FacturaVentaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -66,7 +68,7 @@ public class FacturaVentaService {
         log.info("Creando factura de venta: {}", factura.getNumeroFactura());
 
         if (facturaVentaRepository.existsByNumeroFactura(factura.getNumeroFactura())) {
-            throw new RuntimeException("Ya existe una factura con el número: " + factura.getNumeroFactura());
+            throw new DuplicateResourceException("factura", "número", factura.getNumeroFactura());
         }
 
         Vehiculo vehiculo = factura.getVehiculo();
@@ -76,7 +78,7 @@ public class FacturaVentaService {
         }
 
         if (vehiculo.estaEnRenting()) {
-            throw new RuntimeException("No se puede vender un vehículo que está en renting");
+            throw new BusinessRuleException("No se puede vender un vehículo que está en renting");
         }
 
         factura.calcularImporteTotal();
@@ -101,7 +103,7 @@ public class FacturaVentaService {
 
         if (!facturaExistente.getNumeroFactura().equals(facturaActualizada.getNumeroFactura())) {
             if (facturaVentaRepository.existsByNumeroFactura(facturaActualizada.getNumeroFactura())) {
-                throw new RuntimeException("Ya existe una factura con el número: " + facturaActualizada.getNumeroFactura());
+                throw new DuplicateResourceException("factura", "número", facturaActualizada.getNumeroFactura());
             }
         }
 

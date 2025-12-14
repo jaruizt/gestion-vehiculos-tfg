@@ -80,7 +80,7 @@ public class ContratoRentingService {
         log.info("Creando contrato de renting: {}", contrato.getNumeroContrato());
 
         if (contratoRepository.existsByNumeroContrato(contrato.getNumeroContrato())) {
-            throw new RuntimeException("Ya existe un contrato con el número: " + contrato.getNumeroContrato());
+            throw new DuplicateResourceException("contrato", "número", contrato.getNumeroContrato());
         }
 
         Vehiculo vehiculo = contrato.getVehiculo();
@@ -108,7 +108,7 @@ public class ContratoRentingService {
 
         if (!contratoExistente.getNumeroContrato().equals(contratoActualizado.getNumeroContrato())) {
             if (contratoRepository.existsByNumeroContrato(contratoActualizado.getNumeroContrato())) {
-                throw new RuntimeException("Ya existe un contrato con el número: " + contratoActualizado.getNumeroContrato());
+                throw new DuplicateResourceException("contrato", "número", contratoActualizado.getNumeroContrato());
             }
         }
 
@@ -154,7 +154,7 @@ public class ContratoRentingService {
         ContratoRenting contrato = obtenerPorId(id);
 
         if (contrato.getEstado() == EstadoContrato.FINALIZADO) {
-            throw new RuntimeException("No se puede cancelar un contrato finalizado");
+            throw new BusinessRuleException("No se puede cancelar un contrato finalizado");
         }
 
         contrato.setEstado(EstadoContrato.CANCELADO);

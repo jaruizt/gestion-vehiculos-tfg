@@ -104,7 +104,7 @@ public class ReservaVentaService {
         }
 
         if (reserva.estaExpirada()) {
-            throw new RuntimeException("La reserva ha expirado");
+            throw new BusinessRuleException("La reserva ha expirado");
         }
 
         reserva.confirmar();
@@ -122,7 +122,7 @@ public class ReservaVentaService {
         ReservaVenta reserva = obtenerPorId(id);
 
         if (reserva.getEstado() == EstadoReserva.COMPLETADA) {
-            throw new RuntimeException("No se puede cancelar una reserva completada");
+            throw new BusinessRuleException("No se puede cancelar una reserva completada");
         }
 
         reserva.cancelar();

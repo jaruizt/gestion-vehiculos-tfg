@@ -58,7 +58,7 @@ public class ProveedorService {
         log.info("Creando nuevo proveedor: {}", proveedor.getNombreComercial());
 
         if (proveedorRepository.existsByCif(proveedor.getCif())) {
-            throw new RuntimeException("Ya existe un proveedor con el CIF: " + proveedor.getCif());
+            throw new DuplicateResourceException("proveedor", "CIF", proveedor.getCif());
         }
 
         Proveedor guardado = proveedorRepository.save(proveedor);
@@ -78,7 +78,7 @@ public class ProveedorService {
 
         if (!proveedor.getCif().equals(proveedorAActualizar.getCif())) {
             if (proveedorRepository.existsByCif(proveedorAActualizar.getCif())) {
-                throw new RuntimeException("Ya existe un proveedor con el CIF: " + proveedorAActualizar.getCif());
+                throw new DuplicateResourceException("proveedor", "CIF", proveedorAActualizar.getCif());
             }
         }
 

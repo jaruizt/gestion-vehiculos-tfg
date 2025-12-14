@@ -1,7 +1,13 @@
-package com.uoc.tfg.gestionvehiculos.exceptions;/**
+package com.uoc.tfg.gestionvehiculos.exceptions;
+
+/**
  * @author José Antonio Ruiz Traid
- * @date 12-2025
  * @version 1.0
- */public class InvalidOperationException {
-    
+ * @date 12-2025
+ */
+public class InvalidOperationException extends RuntimeException {
+
+    public InvalidOperationException(String message) {
+        super(message);
+    }
 }

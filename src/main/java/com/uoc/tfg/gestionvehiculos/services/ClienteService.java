@@ -2,6 +2,8 @@ package com.uoc.tfg.gestionvehiculos.services;
 
 import com.uoc.tfg.gestionvehiculos.entities.Cliente;
 import com.uoc.tfg.gestionvehiculos.enums.TipoCliente;
+import com.uoc.tfg.gestionvehiculos.exceptions.BusinessRuleException;
+import com.uoc.tfg.gestionvehiculos.exceptions.DuplicateResourceException;
 import com.uoc.tfg.gestionvehiculos.repositories.ClienteRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -75,7 +77,7 @@ public class ClienteService {
         log.info("Creando nuevo cliente: {}", cliente.getNombreCompleto());
 
         if (clienteRepository.existsByDocumento(cliente.getDocumento())) {
-            throw new RuntimeException("Ya existe un cliente con el documento: " + cliente.getDocumento());
+            throw new DuplicateResourceException("cliente", "documento", cliente.getDocumento());
         }
 
         validarDatosSegunTipo(cliente);
@@ -97,7 +99,7 @@ public class ClienteService {
 
         if (!clienteExistente.getDocumento().equals(clienteActualizado.getDocumento())) {
             if (clienteRepository.existsByDocumento(clienteActualizado.getDocumento())) {
-                throw new RuntimeException("Ya existe un cliente con el documento: " + clienteActualizado.getDocumento());
+                throw new DuplicateResourceException("cliente", "documento", clienteActualizado.getDocumento());
             }
         }
 
@@ -156,11 +158,11 @@ public class ClienteService {
     private void validarDatosSegunTipo(Cliente cliente) {
         if (cliente.getTipoCliente() == TipoCliente.EMPRESA) {
             if (cliente.getRazonSocial() == null || cliente.getRazonSocial().isBlank()) {
-                throw new RuntimeException("La razón social es obligatoria para empresas");
+                throw new BusinessRuleException("La razón social es obligatoria para empresas");
             }
         } else {
             if (cliente.getApellidos() == null || cliente.getApellidos().isBlank()) {
-                throw new RuntimeException("Los apellidos son obligatorios para particulares y autónomos");
+                throw new BusinessRuleException("Los apellidos son obligatorios para particulares y autónomos");
             }
         }
     }

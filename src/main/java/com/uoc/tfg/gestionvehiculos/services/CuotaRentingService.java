@@ -78,11 +78,11 @@ public class CuotaRentingService {
         CuotaRenting cuota = obtenerPorId(id);
 
         if (cuota.getEstado() == EstadoCuota.PAGADA) {
-            throw new RuntimeException("La cuota ya está marcada como pagada");
+            throw new BusinessRuleException("La cuota ya está marcada como pagada");
         }
 
         if (cuota.getEstado() == EstadoCuota.CANCELADA) {
-            throw new RuntimeException("No se puede marcar como pagada una cuota cancelada");
+            throw new BusinessRuleException("No se puede marcar como pagada una cuota cancelada");
         }
 
         cuota.marcarComoPagada();
@@ -104,7 +104,7 @@ public class CuotaRentingService {
         }
 
         if (!cuota.estaVencida()) {
-            throw new RuntimeException("La cuota aún no ha vencido");
+            throw new BusinessRuleException("La cuota aún no ha vencido");
         }
 
         cuota.setEstado(EstadoCuota.VENCIDA);

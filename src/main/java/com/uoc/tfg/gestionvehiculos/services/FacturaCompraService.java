@@ -80,7 +80,7 @@ public class FacturaCompraService {
         log.info("Creando nueva factura de compra: {}", factura.getNumeroFactura());
 
         if (facturaCompraRepository.existsByNumeroFactura(factura.getNumeroFactura())) {
-            throw new RuntimeException("Ya existe una factura con el número: " + factura.getNumeroFactura());
+            throw new DuplicateResourceException("factura", "número", factura.getNumeroFactura());
         }
 
         if (facturaCompraRepository.findByVehiculo(factura.getVehiculo()).isPresent()) {
@@ -106,7 +106,7 @@ public class FacturaCompraService {
 
         if (!facturaExistente.getNumeroFactura().equals(facturaActualizada.getNumeroFactura())) {
             if (facturaCompraRepository.existsByNumeroFactura(facturaActualizada.getNumeroFactura())) {
-                throw new RuntimeException("Ya existe una factura con el número: " + facturaActualizada.getNumeroFactura());
+                throw new DuplicateResourceException("factura", "número", facturaActualizada.getNumeroFactura());
             }
         }
 

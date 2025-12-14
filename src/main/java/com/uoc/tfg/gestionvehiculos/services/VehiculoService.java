@@ -61,7 +61,7 @@ public class VehiculoService {
         log.info("Creando nuevo vehículo con matrícula: {}", vehiculo.getMatricula());
 
         if (vehiculoRepository.findByMatricula(vehiculo.getMatricula()).isPresent()) {
-            throw new RuntimeException("Ya existe un vehículo con la matrícula: " + vehiculo.getMatricula());
+            throw new DuplicateResourceException("vehículo", "matrícula", vehiculo.getMatricula());
         }
 
         if (vehiculo.getSituacion() == null) {
@@ -87,7 +87,7 @@ public class VehiculoService {
 
         if (!vehiculoExistente.getMatricula().equals(vehiculoActualizado.getMatricula())) {
             if (vehiculoRepository.findByMatricula(vehiculoActualizado.getMatricula()).isPresent()) {
-                throw new RuntimeException("Ya existe un vehículo con la matrícula: " + vehiculoActualizado.getMatricula());
+                throw new DuplicateResourceException("vehículo", "matrícula", vehiculoActualizado.getMatricula());
             }
         }
 
@@ -136,7 +136,7 @@ public class VehiculoService {
         Vehiculo vehiculo = obtenerPorId(id);
 
         if (kilometros < vehiculo.getKilometros()) {
-            throw new RuntimeException("Los kilómetros no pueden ser menores a los actuales");
+            throw new BusinessRuleException("Los kilómetros no pueden ser menores a los actuales");
         }
 
         vehiculo.setKilometros(kilometros);
@@ -157,7 +157,7 @@ public class VehiculoService {
         Vehiculo vehiculo = obtenerPorId(id);
 
         if (vehiculo.estaEnRenting()) {
-            throw new RuntimeException("No se puede desactivar un vehículo que está en renting");
+            throw new BusinessRuleException("No se puede desactivar un vehículo que está en renting");
         }
 
         vehiculo.setActivo(false);
