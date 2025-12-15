@@ -1,8 +1,14 @@
 package com.uoc.tfg.gestionvehiculos.controllers;
 
+import com.uoc.tfg.gestionvehiculos.dtos.contrato.ContratoRentingMapper;
+import com.uoc.tfg.gestionvehiculos.dtos.contrato.ContratoRentingRequest;
+import com.uoc.tfg.gestionvehiculos.dtos.contrato.ContratoRentingResponse;
+import com.uoc.tfg.gestionvehiculos.entities.Cliente;
 import com.uoc.tfg.gestionvehiculos.entities.ContratoRenting;
+import com.uoc.tfg.gestionvehiculos.entities.Vehiculo;
 import com.uoc.tfg.gestionvehiculos.enums.EstadoContrato;
 import com.uoc.tfg.gestionvehiculos.services.ContratoRentingService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -29,74 +35,92 @@ public class ContratoRentingController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
-    public ResponseEntity<List<ContratoRenting>> listarActivos() {
+    public ResponseEntity<List<ContratoRentingResponse>> listarActivos() {
         log.info("Listando contratos de renting activos");
         List<ContratoRenting> contratos = contratoService.listarActivos();
-        return ResponseEntity.ok(contratos);
+        List<ContratoRentingResponse> response = ContratoRentingMapper.toListResponse(contratos);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
-    public ResponseEntity<ContratoRenting> obtenerPorId(@PathVariable Long id) {
+    public ResponseEntity<ContratoRentingResponse> obtenerPorId(@PathVariable Long id) {
         log.info("Obteniendo contrato {}", id);
         ContratoRenting contrato = contratoService.obtenerPorId(id);
-        return ResponseEntity.ok(contrato);
+        ContratoRentingResponse response = ContratoRentingMapper.toResponse(contrato);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/numero/{numeroContrato}")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
-    public ResponseEntity<ContratoRenting> obtenerPorNumero(@PathVariable String numeroContrato) {
+    public ResponseEntity<ContratoRentingResponse> obtenerPorNumero(@PathVariable String numeroContrato) {
         log.info("Obteniendo contrato {}", numeroContrato);
         ContratoRenting contrato = contratoService.obtenerPorNumero(numeroContrato);
-        return ResponseEntity.ok(contrato);
+        ContratoRentingResponse response = ContratoRentingMapper.toResponse(contrato);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/cliente/{clienteId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
-    public ResponseEntity<List<ContratoRenting>> obtenerPorCliente(@PathVariable Long clienteId) {
+    public ResponseEntity<List<ContratoRentingResponse>> obtenerPorCliente(@PathVariable Long clienteId) {
         log.info("Listando contratos del cliente {}", clienteId);
         List<ContratoRenting> contratos = contratoService.obtenerPorCliente(clienteId);
-        return ResponseEntity.ok(contratos);
+        List<ContratoRentingResponse> response = ContratoRentingMapper.toListResponse(contratos);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/vehiculo/{vehiculoId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
-    public ResponseEntity<List<ContratoRenting>> obtenerPorVehiculo(@PathVariable Long vehiculoId) {
+    public ResponseEntity<List<ContratoRentingResponse>> obtenerPorVehiculo(@PathVariable Long vehiculoId) {
         log.info("Listando contratos del vehículo {}", vehiculoId);
         List<ContratoRenting> contratos = contratoService.obtenerPorVehiculo(vehiculoId);
-        return ResponseEntity.ok(contratos);
+        List<ContratoRentingResponse> response = ContratoRentingMapper.toListResponse(contratos);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/estado/{estado}")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
-    public ResponseEntity<List<ContratoRenting>> obtenerPorEstado(@PathVariable EstadoContrato estado) {
+    public ResponseEntity<List<ContratoRentingResponse>> obtenerPorEstado(@PathVariable EstadoContrato estado) {
         log.info("Listando contratos con estado {}", estado);
         List<ContratoRenting> contratos = contratoService.obtenerPorEstado(estado);
-        return ResponseEntity.ok(contratos);
+        List<ContratoRentingResponse> response = ContratoRentingMapper.toListResponse(contratos);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/proximos-vencer")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
-    public ResponseEntity<List<ContratoRenting>> obtenerProximosAVencer(@RequestParam(defaultValue = "30") int dias) {
+    public ResponseEntity<List<ContratoRentingResponse>> obtenerProximosAVencer(@RequestParam(defaultValue = "30") int dias) {
         log.info("Listando contratos que vencen en {} días", dias);
         List<ContratoRenting> contratos = contratoService.obtenerProximosAVencer(dias);
-        return ResponseEntity.ok(contratos);
+        List<ContratoRentingResponse> response = ContratoRentingMapper.toListResponse(contratos);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
-    public ResponseEntity<ContratoRenting> crear(@RequestBody ContratoRenting contrato) {
-        log.info("Creando contrato de renting {}", contrato.getNumeroContrato());
-        ContratoRenting creado = contratoService.crear(contrato);
-        return ResponseEntity.status(HttpStatus.CREATED).body(creado);
+    public ResponseEntity<ContratoRentingResponse> crear(@Valid @RequestBody ContratoRentingRequest request) {
+        log.info("Creando contrato de renting {}", request.getNumeroContrato());
+
+        ContratoRenting contrato = ContratoRentingMapper.toEntity(request);
+
+        ContratoRenting creado = contratoService.crear(contrato, request.getClienteId(), request.getVehiculoId());
+        ContratoRentingResponse response = ContratoRentingMapper.toResponse(creado);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
-    public ResponseEntity<ContratoRenting> actualizar(@PathVariable Long id, @RequestBody ContratoRenting contrato) {
+    public ResponseEntity<ContratoRentingResponse> actualizar(@PathVariable Long id, @Valid @RequestBody ContratoRentingRequest request) {
         log.info("Actualizando contrato {}", id);
-        ContratoRenting actualizado = contratoService.actualizar(id, contrato);
-        return ResponseEntity.ok(actualizado);
+
+        ContratoRenting contrato = new ContratoRenting();
+        ContratoRentingMapper.updateEntity(request, contrato);
+
+        ContratoRenting actualizado = contratoService.actualizar(id, contrato, request.getClienteId(), request.getVehiculoId());
+        ContratoRentingResponse response = ContratoRentingMapper.toResponse(actualizado);
+
+        return ResponseEntity.ok(response);
     }
 
     @PatchMapping("/{id}/finalizar")

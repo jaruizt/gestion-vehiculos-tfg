@@ -1,8 +1,12 @@
 package com.uoc.tfg.gestionvehiculos.controllers;
 
+import com.uoc.tfg.gestionvehiculos.dtos.usuario.UsuarioMapper;
+import com.uoc.tfg.gestionvehiculos.dtos.usuario.UsuarioRequest;
+import com.uoc.tfg.gestionvehiculos.dtos.usuario.UsuarioResponse;
 import com.uoc.tfg.gestionvehiculos.entities.Usuario;
 import com.uoc.tfg.gestionvehiculos.enums.Rol;
 import com.uoc.tfg.gestionvehiculos.services.UsuarioService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -29,58 +33,75 @@ public class UsuarioController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
-    public ResponseEntity<List<Usuario>> listarActivos() {
+    public ResponseEntity<List<UsuarioResponse>> listarActivos() {
         log.info("Listando usuarios activos");
         List<Usuario> usuarios = usuarioService.listarActivos();
-        return ResponseEntity.ok(usuarios);
+        List<UsuarioResponse> response = UsuarioMapper.toListResponse(usuarios);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
-    public ResponseEntity<Usuario> obtenerPorId(@PathVariable Long id) {
+    public ResponseEntity<UsuarioResponse> obtenerPorId(@PathVariable Long id) {
         log.info("Obteniendo usuario", id);
         Usuario usuario = usuarioService.obtenerPorId(id);
-        return ResponseEntity.ok(usuario);
+        UsuarioResponse response = UsuarioMapper.toResponse(usuario);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/username/{username}")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
-    public ResponseEntity<Usuario> obtenerPorUsername(@PathVariable String username) {
+    public ResponseEntity<UsuarioResponse> obtenerPorUsername(@PathVariable String username) {
         log.info("Obteniendo usuario {}", username);
         Usuario usuario = usuarioService.obtenerPorUsername(username);
-        return ResponseEntity.ok(usuario);
+        UsuarioResponse response = UsuarioMapper.toResponse(usuario);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/rol/{rol}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<Usuario>> obtenerPorRol(@PathVariable Rol rol) {
+    public ResponseEntity<List<UsuarioResponse>> obtenerPorRol(@PathVariable Rol rol) {
         log.info("Listando usuarios por rol", rol);
         List<Usuario> usuarios = usuarioService.obtenerPorRol(rol);
-        return ResponseEntity.ok(usuarios);
+        List<UsuarioResponse> response = UsuarioMapper.toListResponse(usuarios);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/bloqueados")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<Usuario>> obtenerBloqueados() {
+    public ResponseEntity<List<UsuarioResponse>> obtenerBloqueados() {
         log.info("Listando usuarios bloqueados");
         List<Usuario> usuarios = usuarioService.obtenerBloqueados();
-        return ResponseEntity.ok(usuarios);
+        List<UsuarioResponse> response = UsuarioMapper.toListResponse(usuarios);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Usuario> crear(@RequestBody Usuario usuario) {
-        log.info("Creando usuario: {}", usuario.getUsername());
+    public ResponseEntity<UsuarioResponse> crear(@Valid @RequestBody UsuarioRequest request) {
+        log.info("Creando usuario {}", request.getUsername());
+
+        Usuario usuario = UsuarioMapper.toEntity(request);
+        usuario.setPassword(request.getPassword());
+
         Usuario creado = usuarioService.crear(usuario);
-        return ResponseEntity.status(HttpStatus.CREATED).body(creado);
+        UsuarioResponse response = UsuarioMapper.toResponse(creado);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Usuario> actualizar(@PathVariable Long id, @RequestBody Usuario usuario) {
-        log.info("Actualizando usuario", id);
+    public ResponseEntity<UsuarioResponse> actualizar(@PathVariable Long id, @Valid @RequestBody UsuarioRequest request) {
+        log.info("Actualizando usuario {}", id);
+
+        Usuario usuario = usuarioService.obtenerPorId(id);
+        UsuarioMapper.updateEntity(request, usuario);
+
         Usuario actualizado = usuarioService.actualizar(id, usuario);
-        return ResponseEntity.ok(actualizado);
+        UsuarioResponse response = UsuarioMapper.toResponse(actualizado);
+
+        return ResponseEntity.ok(response);
     }
 
     @PatchMapping("/{id}/cambiar-password")
@@ -89,7 +110,7 @@ public class UsuarioController {
             @PathVariable Long id,
             @RequestBody Map<String, String> passwords) {
 
-        log.info("Cambiando contraseña de {}", id);
+        log.info("Cambiando contraseña usuario {}", id);
 
         String passwordActual = passwords.get("passwordActual");
         String passwordNueva = passwords.get("passwordNueva");
@@ -97,7 +118,7 @@ public class UsuarioController {
         usuarioService.cambiarPassword(id, passwordActual, passwordNueva);
 
         Map<String, String> response = new HashMap<>();
-        response.put("message", "Contraseña actualizada ");
+        response.put("message", "Contraseña actualizada exitosamente");
 
         return ResponseEntity.ok(response);
     }

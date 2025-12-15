@@ -64,28 +64,28 @@ public class FacturaVentaService {
     }
 
     @Transactional
-    public FacturaVenta crear(FacturaVenta factura) {
+    public FacturaVenta crear(FacturaVenta factura, Long clienteId, Long vehiculoId) {
         log.info("Creando factura de venta: {}", factura.getNumeroFactura());
 
         if (facturaVentaRepository.existsByNumeroFactura(factura.getNumeroFactura())) {
             throw new DuplicateResourceException("factura", "número", factura.getNumeroFactura());
         }
 
-        Vehiculo vehiculo = factura.getVehiculo();
+        factura.setVehiculo(vehiculoService.obtenerPorId(vehiculoId));
 
-        if (facturaVentaRepository.findByVehiculo(vehiculo).isPresent()) {
+        if (facturaVentaRepository.findByVehiculo(factura.getVehiculo()).isPresent()) {
             throw new RuntimeException("El vehículo ya ha sido vendido");
         }
 
-        if (vehiculo.estaEnRenting()) {
+        if (factura.getVehiculo().estaEnRenting()) {
             throw new BusinessRuleException("No se puede vender un vehículo que está en renting");
         }
-
+        factura.setCliente(clienteService.obtenerPorId(clienteId));
         factura.calcularImporteTotal();
 
         FacturaVenta guardada = facturaVentaRepository.save(factura);
 
-        vehiculoService.cambiarSituacion(vehiculo.getId(), "VENDIDO");
+        vehiculoService.cambiarSituacion(guardada.getVehiculo().getId(), "VENDIDO");
 
         if (factura.getReserva() != null) {
             reservaVentaService.completar(factura.getReserva().getId());
@@ -96,7 +96,7 @@ public class FacturaVentaService {
     }
 
     @Transactional
-    public FacturaVenta actualizar(Long id, FacturaVenta facturaActualizada) {
+    public FacturaVenta actualizar(Long id, FacturaVenta facturaActualizada, Long clienteId) {
         log.info("Actualizando factura de venta con id: {}", id);
 
         FacturaVenta facturaExistente = obtenerPorId(id);
@@ -109,12 +109,11 @@ public class FacturaVentaService {
 
         facturaExistente.setNumeroFactura(facturaActualizada.getNumeroFactura());
         facturaExistente.setFechaFactura(facturaActualizada.getFechaFactura());
-        facturaExistente.setCliente(facturaActualizada.getCliente());
+        facturaExistente.setCliente(clienteService.obtenerPorId(clienteId));
         facturaExistente.setImporteBase(facturaActualizada.getImporteBase());
         facturaExistente.setIva(facturaActualizada.getIva());
         facturaExistente.setDescuento(facturaActualizada.getDescuento());
         facturaExistente.setObservaciones(facturaActualizada.getObservaciones());
-
         facturaExistente.calcularImporteTotal();
 
         FacturaVenta actualizada = facturaVentaRepository.save(facturaExistente);

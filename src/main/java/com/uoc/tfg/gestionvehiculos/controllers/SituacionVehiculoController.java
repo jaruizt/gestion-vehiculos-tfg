@@ -1,5 +1,8 @@
 package com.uoc.tfg.gestionvehiculos.controllers;
 
+import com.uoc.tfg.gestionvehiculos.dtos.vehiculo.SituacionVehiculoMapper;
+import com.uoc.tfg.gestionvehiculos.dtos.vehiculo.SituacionVehiculoRequest;
+import com.uoc.tfg.gestionvehiculos.dtos.vehiculo.SituacionVehiculoResponse;
 import com.uoc.tfg.gestionvehiculos.entities.SituacionVehiculo;
 import com.uoc.tfg.gestionvehiculos.services.SituacionVehiculoService;
 import lombok.RequiredArgsConstructor;
@@ -26,49 +29,57 @@ public class SituacionVehiculoController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL', 'OPERARIO')")
-    public ResponseEntity<List<SituacionVehiculo>> listarActivas() {
+    public ResponseEntity<List<SituacionVehiculoResponse>> listarActivas() {
         log.info("Listando situaciones de vehículo activas");
         List<SituacionVehiculo> situaciones = situacionService.listarActivas();
-        return ResponseEntity.ok(situaciones);
+        List<SituacionVehiculoResponse> responses = SituacionVehiculoMapper.toListResponse(situaciones);
+        return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/todas")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<SituacionVehiculo>> listarTodas() {
+    public ResponseEntity<List<SituacionVehiculoResponse>> listarTodas() {
         log.info("Listando todas las situaciones");
         List<SituacionVehiculo> situaciones = situacionService.listarTodas();
-        return ResponseEntity.ok(situaciones);
+        List<SituacionVehiculoResponse> responses = SituacionVehiculoMapper.toListResponse(situaciones);
+        return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL', 'OPERARIO')")
-    public ResponseEntity<SituacionVehiculo> obtenerPorId(@PathVariable Long id) {
+    public ResponseEntity<SituacionVehiculoResponse> obtenerPorId(@PathVariable Long id) {
         log.info("Obteniendo situación {}", id);
         SituacionVehiculo situacion = situacionService.obtenerPorId(id);
-        return ResponseEntity.ok(situacion);
+        SituacionVehiculoResponse response = SituacionVehiculoMapper.toResponse(situacion);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/nombre/{nombre}")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL', 'OPERARIO')")
-    public ResponseEntity<SituacionVehiculo> obtenerPorNombre(@PathVariable String nombre) {
+    public ResponseEntity<SituacionVehiculoResponse> obtenerPorNombre(@PathVariable String nombre) {
         log.info("Obteniendo situación {}", nombre);
         SituacionVehiculo situacion = situacionService.obtenerPorNombre(nombre);
-        return ResponseEntity.ok(situacion);
+        SituacionVehiculoResponse response = SituacionVehiculoMapper.toResponse(situacion);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<SituacionVehiculo> crear(@RequestBody SituacionVehiculo situacion) {
-        log.info("Creando situación {}", situacion.getNombre());
+    public ResponseEntity<SituacionVehiculoResponse> crear(@RequestBody SituacionVehiculoRequest request) {
+        log.info("Creando situación {}", request.getNombre());
+        SituacionVehiculo situacion = SituacionVehiculoMapper.toEntity(request);
         SituacionVehiculo creada = situacionService.crear(situacion);
-        return ResponseEntity.status(HttpStatus.CREATED).body(creada);
+        SituacionVehiculoResponse response = SituacionVehiculoMapper.toResponse(creada);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<SituacionVehiculo> actualizar(@PathVariable Long id, @RequestBody SituacionVehiculo situacion) {
+    public ResponseEntity<SituacionVehiculoResponse> actualizar(@PathVariable Long id, @RequestBody SituacionVehiculoRequest request) {
         log.info("Actualizando situación {}", id);
+        SituacionVehiculo situacion = SituacionVehiculoMapper.toEntity(request);
         SituacionVehiculo actualizada = situacionService.actualizar(id, situacion);
-        return ResponseEntity.ok(actualizada);
+        SituacionVehiculoResponse response = SituacionVehiculoMapper.toResponse(actualizada);
+        return ResponseEntity.ok(response);
     }
 }

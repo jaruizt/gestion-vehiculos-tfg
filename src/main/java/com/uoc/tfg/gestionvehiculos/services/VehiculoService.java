@@ -2,6 +2,9 @@ package com.uoc.tfg.gestionvehiculos.services;
 
 import com.uoc.tfg.gestionvehiculos.entities.SituacionVehiculo;
 import com.uoc.tfg.gestionvehiculos.entities.Vehiculo;
+import com.uoc.tfg.gestionvehiculos.exceptions.BusinessRuleException;
+import com.uoc.tfg.gestionvehiculos.exceptions.DuplicateResourceException;
+import com.uoc.tfg.gestionvehiculos.exceptions.ResourceNotFoundException;
 import com.uoc.tfg.gestionvehiculos.repositories.SituacionVehiculoRepository;
 import com.uoc.tfg.gestionvehiculos.repositories.VehiculoRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +26,7 @@ import java.util.List;
 public class VehiculoService {
 
     private final VehiculoRepository vehiculoRepository;
-    private final SituacionVehiculoRepository situacionRepository;
+    private final SituacionVehiculoService situacionVehiculoService;
 
     /**
      * Lista todos los vehículos activos
@@ -57,16 +60,18 @@ public class VehiculoService {
      * Crea un nuevo vehículo
      */
     @Transactional
-    public Vehiculo crear(Vehiculo vehiculo) {
-        log.info("Creando nuevo vehículo con matrícula: {}", vehiculo.getMatricula());
+    public Vehiculo crear(Vehiculo vehiculo, Long situacionId) {
+        log.info("Creando nuevo vehículo: {}", vehiculo.getMatricula());
 
         if (vehiculoRepository.findByMatricula(vehiculo.getMatricula()).isPresent()) {
-            throw new DuplicateResourceException("vehículo", "matrícula", vehiculo.getMatricula());
+            throw new DuplicateResourceException("Vehiculo", "matricula", vehiculo.getMatricula());
         }
 
-        if (vehiculo.getSituacion() == null) {
-            SituacionVehiculo disponible = situacionRepository.findByNombre("DISPONIBLE")
-                    .orElseThrow(() -> new RuntimeException("No se encontró la situación DISPONIBLE"));
+        if (situacionId != null) {
+            SituacionVehiculo situacion = situacionVehiculoService.obtenerPorId(situacionId);
+            vehiculo.setSituacion(situacion);
+        } else {
+            SituacionVehiculo disponible = situacionVehiculoService.obtenerPorNombre("DISPONIBLE");
             vehiculo.setSituacion(disponible);
         }
 
@@ -80,14 +85,14 @@ public class VehiculoService {
      * Actualiza un vehículo existente
      */
     @Transactional
-    public Vehiculo actualizar(Long id, Vehiculo vehiculoActualizado) {
+    public Vehiculo actualizar(Long id, Vehiculo vehiculoActualizado, Long situacionId) {
         log.info("Actualizando vehículo con id: {}", id);
 
         Vehiculo vehiculoExistente = obtenerPorId(id);
 
         if (!vehiculoExistente.getMatricula().equals(vehiculoActualizado.getMatricula())) {
             if (vehiculoRepository.findByMatricula(vehiculoActualizado.getMatricula()).isPresent()) {
-                throw new DuplicateResourceException("vehículo", "matrícula", vehiculoActualizado.getMatricula());
+                throw new DuplicateResourceException("Vehiculo", "matricula", vehiculoActualizado.getMatricula());
             }
         }
 
@@ -99,7 +104,11 @@ public class VehiculoService {
         vehiculoExistente.setKilometros(vehiculoActualizado.getKilometros());
         vehiculoExistente.setNumeroBastidor(vehiculoActualizado.getNumeroBastidor());
         vehiculoExistente.setTipoCombustible(vehiculoActualizado.getTipoCombustible());
-        vehiculoExistente.setSituacion(vehiculoActualizado.getSituacion());
+
+        if (situacionId != null) {
+            SituacionVehiculo situacion = situacionVehiculoService.obtenerPorId(situacionId);
+            vehiculoExistente.setSituacion(situacion);
+        }
 
         Vehiculo actualizado = vehiculoRepository.save(vehiculoExistente);
         log.info("Vehículo actualizado exitosamente");
@@ -115,9 +124,7 @@ public class VehiculoService {
         log.info("Cambiando situación de vehículo id: {} a: {}", id, nombreSituacion);
 
         Vehiculo vehiculo = obtenerPorId(id);
-        SituacionVehiculo nuevaSituacion = situacionRepository.findByNombre(nombreSituacion)
-                .orElseThrow(() -> new RuntimeException("Situación no encontrada: " + nombreSituacion));
-
+        SituacionVehiculo nuevaSituacion = situacionVehiculoService.obtenerPorNombre(nombreSituacion);
         vehiculo.setSituacion(nuevaSituacion);
 
         Vehiculo actualizado = vehiculoRepository.save(vehiculo);

@@ -6,6 +6,8 @@ import com.uoc.tfg.gestionvehiculos.entities.CuotaRenting;
 import com.uoc.tfg.gestionvehiculos.entities.Vehiculo;
 import com.uoc.tfg.gestionvehiculos.enums.EstadoContrato;
 import com.uoc.tfg.gestionvehiculos.enums.EstadoCuota;
+import com.uoc.tfg.gestionvehiculos.exceptions.BusinessRuleException;
+import com.uoc.tfg.gestionvehiculos.exceptions.DuplicateResourceException;
 import com.uoc.tfg.gestionvehiculos.repositories.ContratoRentingRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -76,18 +78,19 @@ public class ContratoRentingService {
     }
 
     @Transactional
-    public ContratoRenting crear(ContratoRenting contrato) {
+    public ContratoRenting crear(ContratoRenting contrato, Long clienteId, Long vehiculoId) {
         log.info("Creando contrato de renting: {}", contrato.getNumeroContrato());
 
         if (contratoRepository.existsByNumeroContrato(contrato.getNumeroContrato())) {
             throw new DuplicateResourceException("contrato", "número", contrato.getNumeroContrato());
         }
 
-        Vehiculo vehiculo = contrato.getVehiculo();
+        Vehiculo vehiculo = vehiculoService.obtenerPorId(vehiculoId);
         if (!vehiculo.estaDisponibleParaRenting()) {
             throw new RuntimeException("El vehículo no está disponible para renting");
         }
-
+        contrato.setVehiculo(vehiculo);
+        contrato.setCliente(clienteService.obtenerPorId(clienteId));
         contrato.calcularDuracionMeses();
 
         ContratoRenting guardado = contratoRepository.save(contrato);
@@ -101,8 +104,9 @@ public class ContratoRentingService {
     }
 
     @Transactional
-    public ContratoRenting actualizar(Long id, ContratoRenting contratoActualizado) {
+    public ContratoRenting actualizar(Long id, ContratoRenting contratoActualizado,Long clienteId, Long vehiculoId) {
         log.info("Actualizando contrato con id: {}", id);
+
 
         ContratoRenting contratoExistente = obtenerPorId(id);
 
@@ -113,13 +117,14 @@ public class ContratoRentingService {
         }
 
         contratoExistente.setNumeroContrato(contratoActualizado.getNumeroContrato());
-        contratoExistente.setCliente(contratoActualizado.getCliente());
+        contratoExistente.setCliente(clienteService.obtenerPorId(clienteId));
         contratoExistente.setFechaInicio(contratoActualizado.getFechaInicio());
         contratoExistente.setFechaFin(contratoActualizado.getFechaFin());
         contratoExistente.setCuotaMensual(contratoActualizado.getCuotaMensual());
         contratoExistente.setKilometrosIncluidos(contratoActualizado.getKilometrosIncluidos());
         contratoExistente.setCosteKmExtra(contratoActualizado.getCosteKmExtra());
         contratoExistente.setObservaciones(contratoActualizado.getObservaciones());
+        contratoExistente.setVehiculo(vehiculoService.obtenerPorId(vehiculoId));
 
         contratoExistente.calcularDuracionMeses();
 

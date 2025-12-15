@@ -1,8 +1,12 @@
 package com.uoc.tfg.gestionvehiculos.controllers;
 
+import com.uoc.tfg.gestionvehiculos.dtos.cliente.ClienteMapper;
+import com.uoc.tfg.gestionvehiculos.dtos.cliente.ClienteRequest;
+import com.uoc.tfg.gestionvehiculos.dtos.cliente.ClienteResponse;
 import com.uoc.tfg.gestionvehiculos.entities.Cliente;
 import com.uoc.tfg.gestionvehiculos.enums.TipoCliente;
 import com.uoc.tfg.gestionvehiculos.services.ClienteService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -29,58 +33,73 @@ public class ClienteController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
-    public ResponseEntity<List<Cliente>> listarActivos() {
+    public ResponseEntity<List<ClienteResponse>> listarActivos() {
         log.info("Listando clientes activos");
         List<Cliente> clientes = clienteService.listarActivos();
-        return ResponseEntity.ok(clientes);
+        List<ClienteResponse> response = ClienteMapper.toListResponse(clientes);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
-    public ResponseEntity<Cliente> obtenerPorId(@PathVariable Long id) {
+    public ResponseEntity<ClienteResponse> obtenerPorId(@PathVariable Long id) {
         log.info("Obteniendo cliente {}", id);
         Cliente cliente = clienteService.obtenerPorId(id);
-        return ResponseEntity.ok(cliente);
+        ClienteResponse response = ClienteMapper.toResponse(cliente);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/documento/{documento}")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
-    public ResponseEntity<Cliente> obtenerPorDocumento(@PathVariable String documento) {
+    public ResponseEntity<ClienteResponse> obtenerPorDocumento(@PathVariable String documento) {
         log.info("Obteniendo cliente con documento {}", documento);
         Cliente cliente = clienteService.obtenerPorDocumento(documento);
-        return ResponseEntity.ok(cliente);
+        ClienteResponse response = ClienteMapper.toResponse(cliente);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/buscar")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
-    public ResponseEntity<List<Cliente>> buscarPorNombre(@RequestParam String nombre) {
+    public ResponseEntity<List<ClienteResponse>> buscarPorNombre(@RequestParam String nombre) {
         log.info("Buscando clientes con nombre: {}", nombre);
         List<Cliente> clientes = clienteService.buscarPorNombre(nombre);
-        return ResponseEntity.ok(clientes);
+        List<ClienteResponse> response = ClienteMapper.toListResponse(clientes);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/tipo/{tipo}")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
-    public ResponseEntity<List<Cliente>> obtenerPorTipo(@PathVariable TipoCliente tipo) {
+    public ResponseEntity<List<ClienteResponse>> obtenerPorTipo(@PathVariable TipoCliente tipo) {
         log.info("Listando clientes de tipo {}", tipo);
         List<Cliente> clientes = clienteService.obtenerPorTipo(tipo);
-        return ResponseEntity.ok(clientes);
+        List<ClienteResponse> response = ClienteMapper.toListResponse(clientes);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
-    public ResponseEntity<Cliente> crear(@RequestBody Cliente cliente) {
-        log.info("Creando cliente {}", cliente.getNombreCompleto());
+    public ResponseEntity<ClienteResponse> crear(@Valid @RequestBody ClienteRequest request) {
+        log.info("Creando cliente {}", request.getNombre());
+
+        Cliente cliente = ClienteMapper.toEntity(request);
         Cliente creado = clienteService.crear(cliente);
-        return ResponseEntity.status(HttpStatus.CREATED).body(creado);
+        ClienteResponse response = ClienteMapper.toResponse(creado);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
-    public ResponseEntity<Cliente> actualizar(@PathVariable Long id, @RequestBody Cliente cliente) {
+    public ResponseEntity<ClienteResponse> actualizar(@PathVariable Long id, @Valid @RequestBody ClienteRequest request) {
         log.info("Actualizando cliente {}", id);
+
+        Cliente cliente = clienteService.obtenerPorId(id);
+        ClienteMapper.updateEntity(request, cliente);
+
         Cliente actualizado = clienteService.actualizar(id, cliente);
-        return ResponseEntity.ok(actualizado);
+        ClienteResponse response = ClienteMapper.toResponse(actualizado);
+
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
@@ -91,7 +110,7 @@ public class ClienteController {
         clienteService.desactivar(id);
 
         Map<String, String> response = new HashMap<>();
-        response.put("message", "Cliente desactivado ");
+        response.put("message", "Cliente desactivado exitosamente");
 
         return ResponseEntity.ok(response);
     }

@@ -1,7 +1,15 @@
 package com.uoc.tfg.gestionvehiculos.controllers;
 
+import com.uoc.tfg.gestionvehiculos.dtos.factura.FacturaCompraMapper;
+import com.uoc.tfg.gestionvehiculos.dtos.factura.FacturaCompraRequest;
+import com.uoc.tfg.gestionvehiculos.dtos.factura.FacturaCompraResponse;
 import com.uoc.tfg.gestionvehiculos.entities.FacturaCompra;
+import com.uoc.tfg.gestionvehiculos.entities.Proveedor;
+import com.uoc.tfg.gestionvehiculos.entities.Vehiculo;
 import com.uoc.tfg.gestionvehiculos.services.FacturaCompraService;
+import com.uoc.tfg.gestionvehiculos.services.ProveedorService;
+import com.uoc.tfg.gestionvehiculos.services.VehiculoService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -28,60 +36,76 @@ public class FacturaCompraController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
-    public ResponseEntity<List<FacturaCompra>> listarActivas() {
+    public ResponseEntity<List<FacturaCompraResponse>> listarActivas() {
         log.info("Listando facturas de compra activas");
         List<FacturaCompra> facturas = facturaCompraService.listarActivas();
-        return ResponseEntity.ok(facturas);
+        List<FacturaCompraResponse> response = FacturaCompraMapper.toListResponse(facturas);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
-    public ResponseEntity<FacturaCompra> obtenerPorId(@PathVariable Long id) {
+    public ResponseEntity<FacturaCompraResponse> obtenerPorId(@PathVariable Long id) {
         log.info("Obteniendo factura de compra {}", id);
         FacturaCompra factura = facturaCompraService.obtenerPorId(id);
-        return ResponseEntity.ok(factura);
+        FacturaCompraResponse response = FacturaCompraMapper.toResponse(factura);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/numero/{numeroFactura}")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
-    public ResponseEntity<FacturaCompra> obtenerPorNumero(@PathVariable String numeroFactura) {
+    public ResponseEntity<FacturaCompraResponse> obtenerPorNumero(@PathVariable String numeroFactura) {
         log.info("Obteniendo factura de compra {}", numeroFactura);
         FacturaCompra factura = facturaCompraService.obtenerPorNumero(numeroFactura);
-        return ResponseEntity.ok(factura);
+        FacturaCompraResponse response = FacturaCompraMapper.toResponse(factura);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/proveedor/{proveedorId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
-    public ResponseEntity<List<FacturaCompra>> obtenerPorProveedor(@PathVariable Long proveedorId) {
+    public ResponseEntity<List<FacturaCompraResponse>> obtenerPorProveedor(@PathVariable Long proveedorId) {
         log.info("Listando facturas del proveedor {}", proveedorId);
         List<FacturaCompra> facturas = facturaCompraService.obtenerPorProveedor(proveedorId);
-        return ResponseEntity.ok(facturas);
+        List<FacturaCompraResponse> response = FacturaCompraMapper.toListResponse(facturas);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/fechas")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
-    public ResponseEntity<List<FacturaCompra>> obtenerPorFechas(
+    public ResponseEntity<List<FacturaCompraResponse>> obtenerPorFechas(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fin) {
 
         log.info("Listando facturas entre {} y {}", inicio, fin);
         List<FacturaCompra> facturas = facturaCompraService.obtenerPorFechas(inicio, fin);
-        return ResponseEntity.ok(facturas);
+        List<FacturaCompraResponse> response = FacturaCompraMapper.toListResponse(facturas);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
-    public ResponseEntity<FacturaCompra> crear(@RequestBody FacturaCompra factura) {
-        log.info("Creando factura de compra {}", factura.getNumeroFactura());
-        FacturaCompra creada = facturaCompraService.crear(factura);
-        return ResponseEntity.status(HttpStatus.CREATED).body(creada);
+    public ResponseEntity<FacturaCompraResponse> crear(@Valid @RequestBody FacturaCompraRequest request) {
+        log.info("Creando factura de compra {}", request.getNumeroFactura());
+
+        FacturaCompra factura = FacturaCompraMapper.toEntity(request);
+
+        FacturaCompra creada = facturaCompraService.crear(factura,request.getProveedorId(), request.getVehiculoId());
+        FacturaCompraResponse response = FacturaCompraMapper.toResponse(creada);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
-    public ResponseEntity<FacturaCompra> actualizar(@PathVariable Long id, @RequestBody FacturaCompra factura) {
+    public ResponseEntity<FacturaCompraResponse> actualizar(@PathVariable Long id, @Valid @RequestBody FacturaCompraRequest request) {
         log.info("Actualizando factura de compra {}", id);
-        FacturaCompra actualizada = facturaCompraService.actualizar(id, factura);
-        return ResponseEntity.ok(actualizada);
+
+        FacturaCompra factura = facturaCompraService.obtenerPorId(id);
+        FacturaCompraMapper.updateEntity(request, factura);
+
+        FacturaCompra actualizada = facturaCompraService.actualizar(id, factura, request.getProveedorId(), request.getVehiculoId());
+        FacturaCompraResponse response = FacturaCompraMapper.toResponse(actualizada);
+
+        return ResponseEntity.ok(response);
     }
 }

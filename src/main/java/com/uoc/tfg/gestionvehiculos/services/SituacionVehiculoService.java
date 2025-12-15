@@ -1,6 +1,7 @@
 package com.uoc.tfg.gestionvehiculos.services;
 
 import com.uoc.tfg.gestionvehiculos.entities.SituacionVehiculo;
+import com.uoc.tfg.gestionvehiculos.exceptions.DuplicateResourceException;
 import com.uoc.tfg.gestionvehiculos.repositories.SituacionVehiculoRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

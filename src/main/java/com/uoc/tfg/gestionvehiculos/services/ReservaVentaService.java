@@ -4,6 +4,7 @@ import com.uoc.tfg.gestionvehiculos.entities.Cliente;
 import com.uoc.tfg.gestionvehiculos.entities.ReservaVenta;
 import com.uoc.tfg.gestionvehiculos.entities.Vehiculo;
 import com.uoc.tfg.gestionvehiculos.enums.EstadoReserva;
+import com.uoc.tfg.gestionvehiculos.exceptions.BusinessRuleException;
 import com.uoc.tfg.gestionvehiculos.repositories.ReservaVentaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -67,10 +68,10 @@ public class ReservaVentaService {
     }
 
     @Transactional
-    public ReservaVenta crear(ReservaVenta reserva) {
+    public ReservaVenta crear(ReservaVenta reserva, Long clienteId, Long vehiculoId) {
         log.info("Creando reserva de venta para vehículo: {}", reserva.getVehiculo().getMatricula());
 
-        Vehiculo vehiculo = reserva.getVehiculo();
+        Vehiculo vehiculo = vehiculoService.obtenerPorId(vehiculoId);
 
         List<ReservaVenta> reservasActivas = reservaRepository.findByVehiculo(vehiculo).stream()
                 .filter(r -> r.getEstado() == EstadoReserva.PENDIENTE ||
@@ -84,7 +85,7 @@ public class ReservaVentaService {
         if (reserva.getFechaLimite() == null) {
             reserva.setFechaLimite(LocalDate.now().plusDays(7));
         }
-
+        reserva.setCliente(clienteService.obtenerPorId(clienteId));
         ReservaVenta guardada = reservaRepository.save(reserva);
 
         vehiculoService.cambiarSituacion(vehiculo.getId(), "RESERVADO");

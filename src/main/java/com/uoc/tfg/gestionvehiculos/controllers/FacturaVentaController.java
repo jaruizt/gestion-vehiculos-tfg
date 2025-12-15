@@ -1,7 +1,11 @@
 package com.uoc.tfg.gestionvehiculos.controllers;
 
+import com.uoc.tfg.gestionvehiculos.dtos.factura.FacturaVentaMapper;
+import com.uoc.tfg.gestionvehiculos.dtos.factura.FacturaVentaRequest;
+import com.uoc.tfg.gestionvehiculos.dtos.factura.FacturaVentaResponse;
 import com.uoc.tfg.gestionvehiculos.entities.FacturaVenta;
 import com.uoc.tfg.gestionvehiculos.services.FacturaVentaService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -31,45 +35,50 @@ public class FacturaVentaController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
-    public ResponseEntity<List<FacturaVenta>> listarActivas() {
+    public ResponseEntity<List<FacturaVentaResponse>> listarActivas() {
         log.info("Listando facturas de venta activas");
         List<FacturaVenta> facturas = facturaVentaService.listarActivas();
-        return ResponseEntity.ok(facturas);
+        List<FacturaVentaResponse> response = FacturaVentaMapper.toListResponse(facturas);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
-    public ResponseEntity<FacturaVenta> obtenerPorId(@PathVariable Long id) {
+    public ResponseEntity<FacturaVentaResponse> obtenerPorId(@PathVariable Long id) {
         log.info("Obteniendo factura de venta {}", id);
         FacturaVenta factura = facturaVentaService.obtenerPorId(id);
-        return ResponseEntity.ok(factura);
+        FacturaVentaResponse response = FacturaVentaMapper.toResponse(factura);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/numero/{numeroFactura}")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
-    public ResponseEntity<FacturaVenta> obtenerPorNumero(@PathVariable String numeroFactura) {
+    public ResponseEntity<FacturaVentaResponse> obtenerPorNumero(@PathVariable String numeroFactura) {
         log.info("Obteniendo factura de venta {}", numeroFactura);
         FacturaVenta factura = facturaVentaService.obtenerPorNumero(numeroFactura);
-        return ResponseEntity.ok(factura);
+        FacturaVentaResponse response = FacturaVentaMapper.toResponse(factura);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/cliente/{clienteId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
-    public ResponseEntity<List<FacturaVenta>> obtenerPorCliente(@PathVariable Long clienteId) {
+    public ResponseEntity<List<FacturaVentaResponse>> obtenerPorCliente(@PathVariable Long clienteId) {
         log.info("Listando facturas del cliente {}", clienteId);
         List<FacturaVenta> facturas = facturaVentaService.obtenerPorCliente(clienteId);
-        return ResponseEntity.ok(facturas);
+        List<FacturaVentaResponse> response = FacturaVentaMapper.toListResponse(facturas);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/fechas")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
-    public ResponseEntity<List<FacturaVenta>> obtenerPorFechas(
+    public ResponseEntity<List<FacturaVentaResponse>> obtenerPorFechas(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fin) {
 
         log.info("Listando facturas entre {} y {}", inicio, fin);
         List<FacturaVenta> facturas = facturaVentaService.obtenerPorFechas(inicio, fin);
-        return ResponseEntity.ok(facturas);
+        List<FacturaVentaResponse> response = FacturaVentaMapper.toListResponse(facturas);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}/beneficio")
@@ -103,17 +112,21 @@ public class FacturaVentaController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
-    public ResponseEntity<FacturaVenta> crear(@RequestBody FacturaVenta factura) {
-        log.info("Creando factura de venta {}", factura.getNumeroFactura());
-        FacturaVenta creada = facturaVentaService.crear(factura);
-        return ResponseEntity.status(HttpStatus.CREATED).body(creada);
+    public ResponseEntity<FacturaVentaResponse> crear(@Valid @RequestBody FacturaVentaRequest request) {
+        log.info("Creando factura de venta {}", request.getNumeroFactura());
+        FacturaVenta facturaVenta = FacturaVentaMapper.toEntity(request);
+        FacturaVenta creada = facturaVentaService.crear(facturaVenta, request.getClienteId(), request.getVehiculoId());
+        FacturaVentaResponse response = FacturaVentaMapper.toResponse(creada);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
-    public ResponseEntity<FacturaVenta> actualizar(@PathVariable Long id, @RequestBody FacturaVenta factura) {
+    public ResponseEntity<FacturaVentaResponse> actualizar(@PathVariable Long id, @Valid @RequestBody FacturaVentaRequest request) {
         log.info("Actualizando factura de venta {}", id);
-        FacturaVenta actualizada = facturaVentaService.actualizar(id, factura);
-        return ResponseEntity.ok(actualizada);
+        FacturaVenta facturaVenta = FacturaVentaMapper.toEntity(request);
+        FacturaVenta actualizada = facturaVentaService.actualizar(id, facturaVenta, request.getClienteId());
+        FacturaVentaResponse response = FacturaVentaMapper.toResponse(actualizada);
+        return ResponseEntity.ok(response);
     }
 }

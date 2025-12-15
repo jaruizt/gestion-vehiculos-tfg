@@ -3,6 +3,7 @@ package com.uoc.tfg.gestionvehiculos.services;
 import com.uoc.tfg.gestionvehiculos.entities.FacturaCompra;
 import com.uoc.tfg.gestionvehiculos.entities.Proveedor;
 import com.uoc.tfg.gestionvehiculos.entities.Vehiculo;
+import com.uoc.tfg.gestionvehiculos.exceptions.DuplicateResourceException;
 import com.uoc.tfg.gestionvehiculos.repositories.FacturaCompraRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -76,7 +77,7 @@ public class FacturaCompraService {
      * Crea una nueva factura de compra
      */
     @Transactional
-    public FacturaCompra crear(FacturaCompra factura) {
+    public FacturaCompra crear(FacturaCompra factura, Long proveedorId, Long vehiculoId) {
         log.info("Creando nueva factura de compra: {}", factura.getNumeroFactura());
 
         if (facturaCompraRepository.existsByNumeroFactura(factura.getNumeroFactura())) {
@@ -87,8 +88,9 @@ public class FacturaCompraService {
             throw new RuntimeException("El vehículo ya tiene una factura de compra asociada");
         }
 
+        factura.setProveedor(proveedorService.obtenerPorId(proveedorId));
+        factura.setVehiculo(vehiculoService.obtenerPorId(vehiculoId));
         factura.calcularImporteTotal();
-
         FacturaCompra guardada = facturaCompraRepository.save(factura);
         log.info("Factura de compra creada con id: {}", guardada.getId());
 
@@ -99,7 +101,7 @@ public class FacturaCompraService {
      * Actualiza una factura de compra
      */
     @Transactional
-    public FacturaCompra actualizar(Long id, FacturaCompra facturaActualizada) {
+    public FacturaCompra actualizar(Long id, FacturaCompra facturaActualizada, Long proveedorId, Long vehiculoId) {
         log.info("Actualizando factura de compra con id: {}", id);
 
         FacturaCompra facturaExistente = obtenerPorId(id);
@@ -110,12 +112,14 @@ public class FacturaCompraService {
             }
         }
 
+
         facturaExistente.setNumeroFactura(facturaActualizada.getNumeroFactura());
         facturaExistente.setFechaFactura(facturaActualizada.getFechaFactura());
-        facturaExistente.setProveedor(facturaActualizada.getProveedor());
+        facturaExistente.setProveedor(proveedorService.obtenerPorId(proveedorId));
         facturaExistente.setImporteBase(facturaActualizada.getImporteBase());
         facturaExistente.setIva(facturaActualizada.getIva());
         facturaExistente.setObservaciones(facturaActualizada.getObservaciones());
+        facturaExistente.setVehiculo(vehiculoService.obtenerPorId(vehiculoId));
 
         facturaExistente.calcularImporteTotal();
 

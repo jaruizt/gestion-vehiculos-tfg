@@ -1,5 +1,7 @@
 package com.uoc.tfg.gestionvehiculos.controllers;
 
+import com.uoc.tfg.gestionvehiculos.dtos.cuota.CuotaRentingMapper;
+import com.uoc.tfg.gestionvehiculos.dtos.cuota.CuotaRentingResponse;
 import com.uoc.tfg.gestionvehiculos.entities.CuotaRenting;
 import com.uoc.tfg.gestionvehiculos.enums.EstadoCuota;
 import com.uoc.tfg.gestionvehiculos.services.CuotaRentingService;
@@ -28,66 +30,73 @@ public class CuotaRentingController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
-    public ResponseEntity<List<CuotaRenting>> listarActivas() {
+    public ResponseEntity<List<CuotaRentingResponse>> listarActivas() {
         log.info("Listando cuotas activas");
         List<CuotaRenting> cuotas = cuotaService.listarActivas();
-        return ResponseEntity.ok(cuotas);
+        List<CuotaRentingResponse> response = CuotaRentingMapper.toListResponse(cuotas);
+        return ResponseEntity.ok(response);
     }
-
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
-    public ResponseEntity<CuotaRenting> obtenerPorId(@PathVariable Long id) {
+    public ResponseEntity<CuotaRentingResponse> obtenerPorId(@PathVariable Long id) {
         log.info("Obteniendo cuota {}", id);
         CuotaRenting cuota = cuotaService.obtenerPorId(id);
-        return ResponseEntity.ok(cuota);
+        CuotaRentingResponse response = CuotaRentingMapper.toResponse(cuota);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/contrato/{contratoId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
-    public ResponseEntity<List<CuotaRenting>> obtenerPorContrato(@PathVariable Long contratoId) {
+    public ResponseEntity<List<CuotaRentingResponse>> obtenerPorContrato(@PathVariable Long contratoId) {
         log.info("Listando cuotas del contrato {}", contratoId);
         List<CuotaRenting> cuotas = cuotaService.obtenerPorContrato(contratoId);
-        return ResponseEntity.ok(cuotas);
+        List<CuotaRentingResponse> response = CuotaRentingMapper.toListResponse(cuotas);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/estado/{estado}")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
-    public ResponseEntity<List<CuotaRenting>> obtenerPorEstado(@PathVariable EstadoCuota estado) {
+    public ResponseEntity<List<CuotaRentingResponse>> obtenerPorEstado(@PathVariable EstadoCuota estado) {
         log.info("Listando cuotas con estado {}", estado);
         List<CuotaRenting> cuotas = cuotaService.obtenerPorEstado(estado);
-        return ResponseEntity.ok(cuotas);
+        List<CuotaRentingResponse> response = CuotaRentingMapper.toListResponse(cuotas);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/pendientes")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
-    public ResponseEntity<List<CuotaRenting>> obtenerPendientes() {
+    public ResponseEntity<List<CuotaRentingResponse>> obtenerPendientes() {
         log.info("Listando cuotas pendientes");
         List<CuotaRenting> cuotas = cuotaService.obtenerPendientes();
-        return ResponseEntity.ok(cuotas);
+        List<CuotaRentingResponse> response = CuotaRentingMapper.toListResponse(cuotas);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/vencidas")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
-    public ResponseEntity<List<CuotaRenting>> obtenerVencidas() {
+    public ResponseEntity<List<CuotaRentingResponse>> obtenerVencidas() {
         log.info("Listando cuotas vencidas");
         List<CuotaRenting> cuotas = cuotaService.obtenerVencidas();
-        return ResponseEntity.ok(cuotas);
+        List<CuotaRentingResponse> response = CuotaRentingMapper.toListResponse(cuotas);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/proximas-vencer")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
-    public ResponseEntity<List<CuotaRenting>> obtenerProximasAVencer(@RequestParam(defaultValue = "7") int dias) {
+    public ResponseEntity<List<CuotaRentingResponse>> obtenerProximasAVencer(@RequestParam(defaultValue = "7") int dias) {
         log.info("Listando cuotas que vencen en {} días", dias);
         List<CuotaRenting> cuotas = cuotaService.obtenerProximasAVencer(dias);
-        return ResponseEntity.ok(cuotas);
+        List<CuotaRentingResponse> response = CuotaRentingMapper.toListResponse(cuotas);
+        return ResponseEntity.ok(response);
     }
 
     @PatchMapping("/{id}/pagar")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
-    public ResponseEntity<CuotaRenting> marcarComoPagada(@PathVariable Long id) {
+    public ResponseEntity<CuotaRentingResponse> marcarComoPagada(@PathVariable Long id) {
         log.info("Marcando cuota {} como pagada", id);
         CuotaRenting cuota = cuotaService.marcarComoPagada(id);
-        return ResponseEntity.ok(cuota);
+        CuotaRentingResponse response = CuotaRentingMapper.toResponse(cuota);
+        return ResponseEntity.ok(response);
     }
 
     @PatchMapping("/actualizar-vencidas")
