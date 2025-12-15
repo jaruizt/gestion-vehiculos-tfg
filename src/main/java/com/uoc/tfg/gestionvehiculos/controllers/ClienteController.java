@@ -6,6 +6,9 @@ import com.uoc.tfg.gestionvehiculos.dtos.cliente.ClienteResponse;
 import com.uoc.tfg.gestionvehiculos.entities.Cliente;
 import com.uoc.tfg.gestionvehiculos.enums.TipoCliente;
 import com.uoc.tfg.gestionvehiculos.services.ClienteService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +30,8 @@ import java.util.Map;
 @RequestMapping("/api/clientes")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Clientes", description = "Gestiona de clientes")
+@SecurityRequirement(name = "bearerAuth")
 public class ClienteController {
 
     private final ClienteService clienteService;
@@ -58,6 +63,10 @@ public class ClienteController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(
+            summary = "Buscar clientes por nombre",
+            description = "Búsqueda parcial de clientes por nombre (case insensitive)"
+    )
     @GetMapping("/buscar")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
     public ResponseEntity<List<ClienteResponse>> buscarPorNombre(@RequestParam String nombre) {
@@ -67,6 +76,10 @@ public class ClienteController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(
+            summary = "Obtener clientes por tipo",
+            description = "Filtra clientes por tipo (PARTICULAR, EMPRESA, AUTONOMO)"
+    )
     @GetMapping("/tipo/{tipo}")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
     public ResponseEntity<List<ClienteResponse>> obtenerPorTipo(@PathVariable TipoCliente tipo) {

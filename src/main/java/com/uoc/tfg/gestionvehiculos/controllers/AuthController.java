@@ -5,8 +5,15 @@ import com.uoc.tfg.gestionvehiculos.dtos.auth.LoginResponse;
 import com.uoc.tfg.gestionvehiculos.dtos.auth.RegistroRequest;
 import com.uoc.tfg.gestionvehiculos.entities.Usuario;
 import com.uoc.tfg.gestionvehiculos.services.AuthService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -18,14 +25,28 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@Slf4j
+@Tag(name = "Autenticación", description = "Endpoints para autenticación y registro de usuarios")
 public class AuthController {
 
     private final AuthService authService;
 
-    /**
-     * POST /api/auth/login
-     * Autentica un usuario y retorna un token JWT
-     */
+
+    @Operation(
+            summary = "Iniciar sesión",
+            description = "Autentica un usuario y devuelve un token JWT válido para acceder a los endpoints protegidos"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Login exitoso",
+                    content = @Content(schema = @Schema(implementation = LoginResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Credenciales inválidas"
+            )
+    })
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
         try {
@@ -39,10 +60,20 @@ public class AuthController {
         }
     }
 
-    /**
-     * POST /api/auth/registro
-     * Registra un nuevo usuario
-     */
+    @Operation(
+            summary = "Registrar nuevo usuario",
+            description = "Crea un nuevo usuario en el sistema con los datos proporcionados"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Usuario creado exitosamente"
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "El username o email ya existen"
+            )
+    })
     @PostMapping("/registro")
     public ResponseEntity<?> registrar(@Valid @RequestBody RegistroRequest request) {
         try {
