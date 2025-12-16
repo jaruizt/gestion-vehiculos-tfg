@@ -5,6 +5,8 @@ import com.uoc.tfg.gestionvehiculos.dtos.vehiculo.SituacionVehiculoRequest;
 import com.uoc.tfg.gestionvehiculos.dtos.vehiculo.SituacionVehiculoResponse;
 import com.uoc.tfg.gestionvehiculos.entities.SituacionVehiculo;
 import com.uoc.tfg.gestionvehiculos.services.SituacionVehiculoService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -23,6 +25,8 @@ import java.util.List;
 @RequestMapping("/api/situaciones-vehiculo")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Situaciones de Vehículo", description = "Catálogo de situaciones")
+@SecurityRequirement(name = "bearerAuth")
 public class SituacionVehiculoController {
 
     private final SituacionVehiculoService situacionService;

@@ -8,6 +8,11 @@ import com.uoc.tfg.gestionvehiculos.entities.ContratoRenting;
 import com.uoc.tfg.gestionvehiculos.entities.Vehiculo;
 import com.uoc.tfg.gestionvehiculos.enums.EstadoContrato;
 import com.uoc.tfg.gestionvehiculos.services.ContratoRentingService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +34,8 @@ import java.util.Map;
 @RequestMapping("/api/contratos-renting")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Contratos de Renting", description = "Gestiona los contratos de renting")
+@SecurityRequirement(name = "bearerAuth")
 public class ContratoRentingController {
 
     private final ContratoRentingService contratoService;
@@ -87,6 +94,10 @@ public class ContratoRentingController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(
+            summary = "Obtener contratos próximos a vencer",
+            description = "Lista contratos activos que vencen dentro de los próximos X días"
+    )
     @GetMapping("/proximos-vencer")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
     public ResponseEntity<List<ContratoRentingResponse>> obtenerProximosAVencer(@RequestParam(defaultValue = "30") int dias) {
@@ -96,6 +107,14 @@ public class ContratoRentingController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(
+            summary = "Crear contrato de renting",
+            description = "Crea un nuevo contrato y genera automáticamente todas las cuotas mensuales. El vehículo debe estar disponible"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Contrato creado y cuotas generadas exitosamente"),
+            @ApiResponse(responseCode = "422", description = "El vehículo no está disponible para renting")
+    })
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
     public ResponseEntity<ContratoRentingResponse> crear(@Valid @RequestBody ContratoRentingRequest request) {
@@ -123,6 +142,10 @@ public class ContratoRentingController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(
+            summary = "Finalizar contrato",
+            description = "Marca el contrato como finalizado y cambia el vehículo a estado DISPONIBLE"
+    )
     @PatchMapping("/{id}/finalizar")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
     public ResponseEntity<Map<String, String>> finalizar(@PathVariable Long id) {
@@ -136,6 +159,10 @@ public class ContratoRentingController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(
+            summary = "Cancelar contrato",
+            description = "Cancela el contrato por un motivo específico y libera el vehículo"
+    )
     @PatchMapping("/{id}/cancelar")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> cancelar(@PathVariable Long id, @RequestBody Map<String, String> body) {

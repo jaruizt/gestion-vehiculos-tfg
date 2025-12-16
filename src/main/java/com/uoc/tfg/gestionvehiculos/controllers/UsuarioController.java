@@ -6,6 +6,11 @@ import com.uoc.tfg.gestionvehiculos.dtos.usuario.UsuarioResponse;
 import com.uoc.tfg.gestionvehiculos.entities.Usuario;
 import com.uoc.tfg.gestionvehiculos.enums.Rol;
 import com.uoc.tfg.gestionvehiculos.services.UsuarioService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +32,8 @@ import java.util.Map;
 @RequestMapping("/api/usuarios")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Usuarios", description = "Gestión de usuarios que operan en el sistema")
+@SecurityRequirement(name = "bearerAuth")
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
@@ -104,6 +111,14 @@ public class UsuarioController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(
+            summary = "Cambiar contraseña",
+            description = "Permite a un usuario cambiar su contraseña proporcionando la actual y la nueva"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Contraseña actualizada exitosamente"),
+            @ApiResponse(responseCode = "422", description = "La contraseña actual es incorrecta")
+    })
     @PatchMapping("/{id}/cambiar-password")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL', 'OPERARIO', 'USUARIO')")
     public ResponseEntity<Map<String, String>> cambiarPassword(
@@ -149,6 +164,10 @@ public class UsuarioController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(
+            summary = "Desbloquear cuenta",
+            description = "Desbloquea una cuenta de usuario que ha sido bloqueada por intentos fallidos"
+    )
     @PatchMapping("/{id}/desbloquear")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> desbloquear(@PathVariable Long id) {

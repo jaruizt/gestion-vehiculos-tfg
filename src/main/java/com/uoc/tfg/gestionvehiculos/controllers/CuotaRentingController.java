@@ -5,6 +5,9 @@ import com.uoc.tfg.gestionvehiculos.dtos.cuota.CuotaRentingResponse;
 import com.uoc.tfg.gestionvehiculos.entities.CuotaRenting;
 import com.uoc.tfg.gestionvehiculos.enums.EstadoCuota;
 import com.uoc.tfg.gestionvehiculos.services.CuotaRentingService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +27,8 @@ import java.util.Map;
 @RequestMapping("/api/cuotas-renting")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Cuotas de Renting", description = "Gestión de cuotas de renting")
+@SecurityRequirement(name = "bearerAuth")
 public class CuotaRentingController {
 
     private final CuotaRentingService cuotaService;
@@ -72,6 +77,10 @@ public class CuotaRentingController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(
+            summary = "Obtener cuotas vencidas",
+            description = "Lista todas las cuotas vencids"
+    )
     @GetMapping("/vencidas")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
     public ResponseEntity<List<CuotaRentingResponse>> obtenerVencidas() {

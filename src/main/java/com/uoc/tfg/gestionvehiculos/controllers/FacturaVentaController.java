@@ -5,6 +5,11 @@ import com.uoc.tfg.gestionvehiculos.dtos.factura.FacturaVentaRequest;
 import com.uoc.tfg.gestionvehiculos.dtos.factura.FacturaVentaResponse;
 import com.uoc.tfg.gestionvehiculos.entities.FacturaVenta;
 import com.uoc.tfg.gestionvehiculos.services.FacturaVentaService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +34,8 @@ import java.util.Map;
 @RequestMapping("/api/facturas-venta")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Facturas de Venta", description = "Gestión de facturas de venta")
+@SecurityRequirement(name = "bearerAuth")
 public class FacturaVentaController {
 
     private final FacturaVentaService facturaVentaService;
@@ -81,6 +88,10 @@ public class FacturaVentaController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(
+            summary = "Calcular beneficio de una venta",
+            description = "Calcula el beneficio obtenido en la venta (precio venta - precio compra del vehículo)"
+    )
     @GetMapping("/{id}/beneficio")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
     public ResponseEntity<Map<String, BigDecimal>> calcularBeneficio(@PathVariable Long id) {
@@ -94,6 +105,10 @@ public class FacturaVentaController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(
+            summary = "Calcular beneficoi total por período",
+            description = "Suma el beneficio total de todas las ventas realizadas entre dos fechas"
+    )
     @GetMapping("/beneficio-total")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
     public ResponseEntity<Map<String, BigDecimal>> calcularBeneficioTotal(
@@ -110,6 +125,14 @@ public class FacturaVentaController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(
+            summary = "Crear factura de venta",
+            description = "Registra la venta de un vehículo. El vehículo no puede estar en renting ni tener otra factura de venta"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Factura de venta creada exitosamente"),
+            @ApiResponse(responseCode = "422", description = "El vehículo no se puede vender (ya vendido o en renting)")
+    })
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
     public ResponseEntity<FacturaVentaResponse> crear(@Valid @RequestBody FacturaVentaRequest request) {

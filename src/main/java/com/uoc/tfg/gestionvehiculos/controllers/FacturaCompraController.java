@@ -9,6 +9,11 @@ import com.uoc.tfg.gestionvehiculos.entities.Vehiculo;
 import com.uoc.tfg.gestionvehiculos.services.FacturaCompraService;
 import com.uoc.tfg.gestionvehiculos.services.ProveedorService;
 import com.uoc.tfg.gestionvehiculos.services.VehiculoService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +35,8 @@ import java.util.List;
 @RequestMapping("/api/facturas-compra")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Facturas de Compra", description = "Gestión de facturas de compra")
+@SecurityRequirement(name = "bearerAuth")
 public class FacturaCompraController {
 
     private final FacturaCompraService facturaCompraService;
@@ -70,6 +77,14 @@ public class FacturaCompraController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(
+            summary = "Obtener facturas por rango de fechas",
+            description = "Lista todas las facturas de compra entre dos fechas específicas"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Facturas obtenidas exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Formato de fecha inválido (usar ISO: yyyy-MM-dd)")
+    })
     @GetMapping("/fechas")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
     public ResponseEntity<List<FacturaCompraResponse>> obtenerPorFechas(
@@ -82,6 +97,14 @@ public class FacturaCompraController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(
+            summary = "Crear factura de compra",
+            description = "Registra la compra de un vehículo. El vehículo no puede tener otra factura de compra previa"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Factura creada exitosamente"),
+            @ApiResponse(responseCode = "422", description = "El vehículo ya tiene una factura de compra asociada")
+    })
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
     public ResponseEntity<FacturaCompraResponse> crear(@Valid @RequestBody FacturaCompraRequest request) {

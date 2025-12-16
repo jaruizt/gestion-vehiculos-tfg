@@ -3,6 +3,7 @@ package com.uoc.tfg.gestionvehiculos.services;
 import com.uoc.tfg.gestionvehiculos.entities.ContratoRenting;
 import com.uoc.tfg.gestionvehiculos.entities.CuotaRenting;
 import com.uoc.tfg.gestionvehiculos.enums.EstadoCuota;
+import com.uoc.tfg.gestionvehiculos.exceptions.BusinessRuleException;
 import com.uoc.tfg.gestionvehiculos.repositories.CuotaRentingRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

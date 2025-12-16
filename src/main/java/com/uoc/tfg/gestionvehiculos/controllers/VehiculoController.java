@@ -9,6 +9,13 @@ import com.uoc.tfg.gestionvehiculos.exceptions.ResourceNotFoundException;
 import com.uoc.tfg.gestionvehiculos.repositories.SituacionVehiculoRepository;
 import com.uoc.tfg.gestionvehiculos.services.SituacionVehiculoService;
 import com.uoc.tfg.gestionvehiculos.services.VehiculoService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,10 +37,16 @@ import java.util.Map;
 @RequestMapping("/api/vehiculos")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Vehículos", description = "Gestióna todos los aspectos de vehiculo")
+@SecurityRequirement(name = "bearerAuth")
 public class VehiculoController {
 
     private final VehiculoService vehiculoService;
 
+    @Operation(
+            summary = "Listar vehículos activos",
+            description = "Obtiene todos los vehículos que están activos en la BD"
+    )
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL', 'OPERARIO')")
     public ResponseEntity<List<VehiculoResponse>> listarActivos() {
@@ -45,6 +58,21 @@ public class VehiculoController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(
+            summary = "Obtener vehículo por ID",
+            description = "Obtiene un vehiculo por su id"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Vehículo encontrado",
+                    content = @Content(schema = @Schema(implementation = VehiculoResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Vehículo no encontrado"
+            )
+    })
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL', 'OPERARIO')")
     public ResponseEntity<VehiculoResponse> obtenerPorId(@PathVariable Long id) {
@@ -54,6 +82,10 @@ public class VehiculoController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(
+            summary = "Obtener vehículo por matrícula",
+            description = "Busca un vehículo por su matrícula"
+    )
     @GetMapping("/matricula/{matricula}")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL', 'OPERARIO')")
     public ResponseEntity<VehiculoResponse> obtenerPorMatricula(@PathVariable String matricula) {
@@ -63,6 +95,21 @@ public class VehiculoController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(
+            summary = "Crear nuevo vehículo",
+            description = "Registra un nuevo vehículo en el programa"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Vehículo creado exitosamente",
+                    content = @Content(schema = @Schema(implementation = VehiculoResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Ya existe un vehículo con esa matrícula"
+            )
+    })
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
     public ResponseEntity<VehiculoResponse> crear(@Valid @RequestBody VehiculoRequest request) {
@@ -74,6 +121,7 @@ public class VehiculoController {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
@@ -116,6 +164,20 @@ public class VehiculoController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(
+            summary = "Desactivar vehículo",
+            description = "Desactiva vehículo (no lo elimina físicamente)"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Vehículo desactivado exitosamente"
+            ),
+            @ApiResponse(
+                    responseCode = "422",
+                    description = "No se puede desactivar un vehículo en renting"
+            )
+    })
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> desactivar(@PathVariable Long id) {

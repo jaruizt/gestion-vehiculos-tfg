@@ -5,6 +5,8 @@ import com.uoc.tfg.gestionvehiculos.dtos.proveedor.ProveedorRequest;
 import com.uoc.tfg.gestionvehiculos.dtos.proveedor.ProveedorResponse;
 import com.uoc.tfg.gestionvehiculos.entities.Proveedor;
 import com.uoc.tfg.gestionvehiculos.services.ProveedorService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +28,8 @@ import java.util.Map;
 @RequestMapping("/api/proveedores")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Proveedores", description = "Gestión de proveedores")
+@SecurityRequirement(name = "bearerAuth")
 public class ProveedorController {
 
     private final ProveedorService proveedorService;

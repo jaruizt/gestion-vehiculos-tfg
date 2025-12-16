@@ -6,6 +6,11 @@ import com.uoc.tfg.gestionvehiculos.dtos.reserva.ReservaVentaResponse;
 import com.uoc.tfg.gestionvehiculos.entities.ReservaVenta;
 import com.uoc.tfg.gestionvehiculos.enums.EstadoReserva;
 import com.uoc.tfg.gestionvehiculos.services.ReservaVentaService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +32,8 @@ import java.util.Map;
 @RequestMapping("/api/reservas-venta")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Reservas de Venta", description = "Gestioan el sistema de reservas")
+@SecurityRequirement(name = "bearerAuth")
 public class ReservaVentaController {
 
     private final ReservaVentaService reservaService;
@@ -85,6 +92,14 @@ public class ReservaVentaController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(
+            summary = "Crear reserva de venta",
+            description = "Crea una reserva de venta para un vehículo. El vehículo no puede tener otra reserva activa"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Reserva creada exitosamente"),
+            @ApiResponse(responseCode = "422", description = "El vehículo ya tiene una reserva activa")
+    })
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
     public ResponseEntity<ReservaVentaResponse> crear(@Valid @RequestBody ReservaVentaRequest request) {
@@ -95,6 +110,14 @@ public class ReservaVentaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @Operation(
+            summary = "Confirmar reserva",
+            description = "Confirma una reserva pendiente. Solo se pueden confirmar reservas en estado PENDIENTE y no expiradas"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Reserva confirmada exitosamente"),
+            @ApiResponse(responseCode = "422", description = "Solo se pueden confirmar reservas pendientes")
+    })
     @PatchMapping("/{id}/confirmar")
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
     public ResponseEntity<ReservaVentaResponse> confirmar(@PathVariable Long id) {
@@ -118,6 +141,10 @@ public class ReservaVentaController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(
+            summary = "Actualizar reservas expiradas (Job automático)",
+            description = "Proceso que cancela automáticamente las reservas que han superado su fecha límite"
+    )
     @PatchMapping("/actualizar-expiradas")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> actualizarReservasExpiradas() {
