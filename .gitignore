@@ -24,7 +24,7 @@ out/
 .DS_Store
 
 # Application properties con datos sensibles (comentar si quieres subir el tuyo)
-# src/main/resources/application.properties
+src/main/resources/application.properties
 
 # Bases de datos locales
 *.db
