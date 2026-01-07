@@ -29,7 +29,7 @@ public class CuotaRentingMapper {
                 .fechaVencimiento(cuota.getFechaVencimiento())
                 .fechaPago(cuota.getFechaPago())
                 .importe(cuota.getImporte())
-                .estado(cuota.getEstado())
+                .estadoNombre(cuota.getEstado() != null ? cuota.getEstado().name() : null)
                 .observaciones(cuota.getObservaciones())
                 .fechaCreacion(cuota.getFechaCreacion())
                 .fechaActualizacion(cuota.getFechaActualizacion())

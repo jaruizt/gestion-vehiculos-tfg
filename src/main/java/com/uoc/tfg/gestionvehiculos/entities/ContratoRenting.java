@@ -98,6 +98,9 @@ public class ContratoRenting extends AuditableEntity {
     @OneToMany(mappedBy = "contrato", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CuotaRenting> cuotas = new ArrayList<>();
 
+    @Column(name = "dia_cobro_cuota")
+    private Integer diaCobroCuota;
+
     /**
      * Calcula la duración en meses entre fechas
      */

@@ -30,4 +30,6 @@ public interface ReservaVentaRepository extends JpaRepository<ReservaVenta, Long
             EstadoReserva estado,
             LocalDate fecha
     );
+
+    boolean existsByVehiculoIdAndActivoTrue(Long vehiculoId);
 }

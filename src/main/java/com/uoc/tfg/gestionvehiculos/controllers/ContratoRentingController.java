@@ -3,6 +3,7 @@ package com.uoc.tfg.gestionvehiculos.controllers;
 import com.uoc.tfg.gestionvehiculos.dtos.contrato.ContratoRentingMapper;
 import com.uoc.tfg.gestionvehiculos.dtos.contrato.ContratoRentingRequest;
 import com.uoc.tfg.gestionvehiculos.dtos.contrato.ContratoRentingResponse;
+import com.uoc.tfg.gestionvehiculos.dtos.cuota.CuotaRentingResponse;
 import com.uoc.tfg.gestionvehiculos.entities.Cliente;
 import com.uoc.tfg.gestionvehiculos.entities.ContratoRenting;
 import com.uoc.tfg.gestionvehiculos.entities.Vehiculo;
@@ -173,6 +174,39 @@ public class ContratoRentingController {
 
         Map<String, String> response = new HashMap<>();
         response.put("message", "Contrato cancelado exitosamente");
+
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Obtener las cuotas de un contrato
+     */
+    @GetMapping("/{id}/cuotas")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL', 'OPERARIO')")
+    @Operation(summary = "Obtener cuotas de un contrato",
+            description = "Obtiene todas las cuotas de un contrato de renting específico")
+    public ResponseEntity<List<CuotaRentingResponse>> obtenerCuotasPorContrato(
+            @PathVariable Long id) {
+
+        log.info("Obteniendo cuotas del contrato con ID: {}", id);
+        List<CuotaRentingResponse> cuotas = contratoService.obtenerCuotasPorContrato(id);
+
+        return ResponseEntity.ok(cuotas);
+    }
+
+    @Operation(
+            summary = "Activar contrato",
+            description = "Cambia el estado del contrato de PENDIENTE a ACTIVO"
+    )
+    @PatchMapping("/{id}/activar")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE', 'COMERCIAL')")
+    public ResponseEntity<Map<String, String>> activar(@PathVariable Long id) {
+        log.info("Activando contrato {}", id);
+
+        contratoService.activar(id);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Contrato activado exitosamente");
 
         return ResponseEntity.ok(response);
     }

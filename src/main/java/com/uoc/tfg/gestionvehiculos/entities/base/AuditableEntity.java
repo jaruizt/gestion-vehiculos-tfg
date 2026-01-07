@@ -1,8 +1,6 @@
 package com.uoc.tfg.gestionvehiculos.entities.base;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedBy;
@@ -20,7 +18,7 @@ import java.time.LocalDateTime;
 public abstract class AuditableEntity {
 
     @CreatedDate
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = true, updatable = false)
     private LocalDateTime fechaCreacion;
 
     @LastModifiedDate
@@ -28,7 +26,7 @@ public abstract class AuditableEntity {
     private LocalDateTime fechaActualizacion;
 
     @CreatedBy
-    @Column(updatable = false, length = 100)
+    @Column(updatable = true, length = 100)
     private String usuarioCreacion;
 
     @LastModifiedBy
@@ -37,4 +35,25 @@ public abstract class AuditableEntity {
 
     @Column(columnDefinition = "BOOLEAN DEFAULT TRUE")
     private Boolean activo = true;
+
+    @PrePersist
+    protected void onCreate() {
+        if (fechaCreacion == null) {
+            fechaCreacion = LocalDateTime.now();
+        }
+        if (fechaActualizacion == null) {
+            fechaActualizacion = LocalDateTime.now();
+        }
+        if (usuarioCreacion == null) {
+            usuarioCreacion = "SYSTEM";
+        }
+        if (usuarioModificacion == null) {
+            usuarioModificacion = "SYSTEM";
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        fechaActualizacion = LocalDateTime.now();
+    }
 }

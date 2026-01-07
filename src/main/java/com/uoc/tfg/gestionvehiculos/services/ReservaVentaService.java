@@ -5,6 +5,7 @@ import com.uoc.tfg.gestionvehiculos.entities.ReservaVenta;
 import com.uoc.tfg.gestionvehiculos.entities.Vehiculo;
 import com.uoc.tfg.gestionvehiculos.enums.EstadoReserva;
 import com.uoc.tfg.gestionvehiculos.exceptions.BusinessRuleException;
+import com.uoc.tfg.gestionvehiculos.exceptions.DuplicateResourceException;
 import com.uoc.tfg.gestionvehiculos.repositories.ReservaVentaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -69,28 +70,34 @@ public class ReservaVentaService {
 
     @Transactional
     public ReservaVenta crear(ReservaVenta reserva, Long clienteId, Long vehiculoId) {
-        log.info("Creando reserva de venta para vehículo: {}", reserva.getVehiculo().getMatricula());
+        log.info("Creando reserva de venta");
 
         Vehiculo vehiculo = vehiculoService.obtenerPorId(vehiculoId);
 
-        List<ReservaVenta> reservasActivas = reservaRepository.findByVehiculo(vehiculo).stream()
-                .filter(r -> r.getEstado() == EstadoReserva.PENDIENTE ||
-                        r.getEstado() == EstadoReserva.CONFIRMADA)
-                .toList();
-
-        if (!reservasActivas.isEmpty()) {
-            throw new RuntimeException("El vehículo ya tiene una reserva activa");
+        // Validar que el vehículo esté disponible
+        if (!vehiculo.getSituacion().getNombre().equals("DISPONIBLE")) {
+            throw new BusinessRuleException(
+                    "El vehículo debe estar DISPONIBLE. Estado actual: " + vehiculo.getSituacion().getNombre()
+            );
         }
 
-        if (reserva.getFechaLimite() == null) {
-            reserva.setFechaLimite(LocalDate.now().plusDays(7));
+        if (reservaRepository.existsByVehiculoIdAndActivoTrue(vehiculoId)) {
+            throw new DuplicateResourceException("reserva", "vehículo", vehiculoId.toString());
         }
-        reserva.setCliente(clienteService.obtenerPorId(clienteId));
+
+        reserva.setVehiculo(vehiculo);
+
+        Cliente cliente = clienteService.obtenerPorId(clienteId);
+        reserva.setCliente(cliente);
+
+        // Guardar reserva
         ReservaVenta guardada = reservaRepository.save(reserva);
 
-        vehiculoService.cambiarSituacion(vehiculo.getId(), "RESERVADO");
+        // Cambiar situación del vehículo a RESERVADO
+        vehiculoService.cambiarSituacion(vehiculoId, "RESERVADO");
 
-        log.info("Reserva creada con id: {}", guardada.getId());
+        log.info("Reserva creada para vehículo {}", vehiculo.getMatricula()); 
+
         return guardada;
     }
 

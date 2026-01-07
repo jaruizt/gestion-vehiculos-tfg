@@ -22,13 +22,14 @@ import java.time.LocalDateTime;
 public class CuotaRentingResponse {
 
     private Long id;
+    private Long contratoRentingId;
     private Long contratoId;
     private String contratoNumero;
     private Integer numeroCuota;
     private LocalDate fechaVencimiento;
     private LocalDate fechaPago;
     private BigDecimal importe;
-    private EstadoCuota estado;
+    private String estadoNombre;
     private String observaciones;
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaActualizacion;

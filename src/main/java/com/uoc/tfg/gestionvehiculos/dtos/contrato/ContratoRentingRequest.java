@@ -21,7 +21,6 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class ContratoRentingRequest {
 
-    @NotBlank(message = "El número de contrato es obligatorio")
     @Size(max = 50, message = "El número de contrato no puede tener más de 50 caracteres")
     private String numeroContrato;
 

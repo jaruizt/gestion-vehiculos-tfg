@@ -34,8 +34,10 @@ public class ContratoRentingResponse {
     private Integer kilometrosIncluidos;
     private BigDecimal costeKmExtra;
     private EstadoContrato estado;
+    private String estadoNombre;
     private String observaciones;
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaActualizacion;
     private Boolean activo;
+    private Integer diaCobroCuota;
 }

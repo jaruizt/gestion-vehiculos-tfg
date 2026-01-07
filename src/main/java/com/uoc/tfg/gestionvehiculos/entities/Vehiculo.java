@@ -78,7 +78,6 @@ public class Vehiculo extends AuditableEntity {
     public boolean estaDisponibleParaRenting() {
         return situacion != null &&
                 "DISPONIBLE".equals(situacion.getNombre()) &&
-                facturaCompra != null &&
                 facturaVenta == null;
     }
 

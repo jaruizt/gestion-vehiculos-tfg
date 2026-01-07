@@ -7,10 +7,10 @@ package com.uoc.tfg.gestionvehiculos.enums;
  * @since 1.0
  */
 public enum EstadoContrato {
-    ACTIVO("Activo", "Contrato en vigor"),
-    FINALIZADO("Finalizado", "Contrato finalizado"),
-    CANCELADO("Cancelado", "Contrato cancelado antes de tiempo"),
-    PENDIENTE("Pendiente", "Pendiente de firma");
+    ACTIVO("ACTIVO", "Contrato en vigor"),
+    FINALIZADO("FINALIZADO", "Contrato finalizado"),
+    CANCELADO("CANCELADO", "Contrato cancelado antes de tiempo"),
+    PENDIENTE("PENDIENTE", "Pendiente de firma");
 
     private final String nombre;
     private final String descripcion;

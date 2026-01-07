@@ -35,6 +35,8 @@ public class ContratoRentingMapper {
                 .kilometrosIncluidos(contrato.getKilometrosIncluidos())
                 .costeKmExtra(contrato.getCosteKmExtra())
                 .estado(contrato.getEstado())
+                .estadoNombre(contrato.getEstado().getNombre())
+                .diaCobroCuota(contrato.getDiaCobroCuota())
                 .observaciones(contrato.getObservaciones())
                 .fechaCreacion(contrato.getFechaCreacion())
                 .fechaActualizacion(contrato.getFechaActualizacion())
