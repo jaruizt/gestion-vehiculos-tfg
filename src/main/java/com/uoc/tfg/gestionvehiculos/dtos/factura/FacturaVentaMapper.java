@@ -29,6 +29,7 @@ public class FacturaVentaMapper {
                 .clienteNombre(factura.getCliente() != null ? factura.getCliente().getNombreCompleto() : null)
                 .vehiculoId(factura.getVehiculo() != null ? factura.getVehiculo().getId() : null)
                 .vehiculoMatricula(factura.getVehiculo() != null ? factura.getVehiculo().getMatricula() : null)
+                .vehiculoMarcaModelo(factura.getVehiculo().getMarca() + " " + factura.getVehiculo().getModelo())
                 .reservaId(factura.getReserva() != null ? factura.getReserva().getId() : null)
                 .importeBase(factura.getImporteBase())
                 .iva(factura.getIva())

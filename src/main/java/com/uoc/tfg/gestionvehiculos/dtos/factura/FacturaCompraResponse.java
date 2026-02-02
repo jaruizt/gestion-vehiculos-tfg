@@ -27,6 +27,7 @@ public class FacturaCompraResponse {
     private String proveedorNombre;
     private Long vehiculoId;
     private String vehiculoMatricula;
+    private String vehiculoMarcaModelo;
     private BigDecimal importeBase;
     private BigDecimal iva;
     private BigDecimal importeTotal;

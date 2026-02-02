@@ -29,6 +29,7 @@ public class FacturaCompraMapper {
                 .proveedorNombre(factura.getProveedor() != null ? factura.getProveedor().getNombreComercial() : null)
                 .vehiculoId(factura.getVehiculo() != null ? factura.getVehiculo().getId() : null)
                 .vehiculoMatricula(factura.getVehiculo() != null ? factura.getVehiculo().getMatricula() : null)
+                .vehiculoMarcaModelo(factura.getVehiculo().getMarca() + " " + factura.getVehiculo().getModelo())
                 .importeBase(factura.getImporteBase())
                 .iva(factura.getIva())
                 .importeTotal(factura.getImporteTotal())

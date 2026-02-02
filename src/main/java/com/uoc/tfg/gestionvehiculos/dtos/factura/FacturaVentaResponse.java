@@ -27,6 +27,7 @@ public class FacturaVentaResponse {
     private String clienteNombre;
     private Long vehiculoId;
     private String vehiculoMatricula;
+    private String vehiculoMarcaModelo;
     private Long reservaId;
     private BigDecimal importeBase;
     private BigDecimal iva;
